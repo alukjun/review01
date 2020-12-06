@@ -19,9 +19,9 @@
 						<DesktopOutlined />
 						<span>角色管理</span>
 					</a-menu-item>
-					<a-menu-item key="/product">
+					<a-menu-item key="/menu">
 						<DesktopOutlined />
-						<span>商品管理</span>
+						<span>菜单管理</span>
 					</a-menu-item>
 				</a-menu>
 			</a-layout-sider>
@@ -88,6 +88,7 @@ export default {
 	},
   methods: {
     menuClick({ key }) {
+			console.log(key)
       // 获取到当前的key,并且跳转
       this.$router.push({
         path: key

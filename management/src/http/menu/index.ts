@@ -1,28 +1,32 @@
-const menuList = {
+const list = {
   url: '/menu/admin/pageMenu',
   method: 'get'
 }
 
-// const updateRole = {
-//   url: '/role/admin/updateRoleById'
-// }
+const update = {
+  url: '/menu/admin/updateMenuById',
+  method: 'put'
+}
 
-// const updateStatus = {
-//   url: '/role/admin/updateRoleStatusById'
-// }
+const updateStatus = {
+  url: '/menu/admin/updateMenuStatusById',
+  method: 'put'
+}
 
-// const delRole = {
-//   url: '/role/admin/deleteRoleById'
-// }
+const del = {
+  url: '/menu/admin/deleteMenuById/[id]',
+  method: 'delete'
+}
 
-// const createRole = {
-//   url: '/role/admin/createRole'
-// }
+const create = {
+  url: '/menu/admin/createMenu',
+  method: 'post'
+}
 
 export default {
-  menuList,
-  // updateRole,
-  // updateStatus,
-  // delRole,
-  // createRole
+  list,
+  update,
+  updateStatus,
+  del,
+  create
 }

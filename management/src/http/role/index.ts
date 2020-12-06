@@ -1,9 +1,9 @@
-const roleList = {
+const list = {
   url: '/role/admin/pageRole',
   method: 'get'
 }
 
-const updateRole = {
+const update = {
   url: '/role/admin/updateRoleById',
   method: 'put'
 }
@@ -13,20 +13,20 @@ const updateStatus = {
   method: 'put'
 }
 
-const delRole = {
-  url: '/role/admin/deleteRoleById',
+const del = {
+  url: '/role/admin/deleteRoleById/[id]',
   method: 'delete'
 }
 
-const createRole = {
+const create = {
   url: '/role/admin/createRole',
   method: 'post'
 }
 
 export default {
-  roleList,
-  updateRole,
+  list,
+  update,
   updateStatus,
-  delRole,
-  createRole
+  del,
+  create
 }

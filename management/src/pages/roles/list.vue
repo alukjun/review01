@@ -21,12 +21,12 @@
 						v-model:visible="visible"
 						:after-visible-change="afterVisibleChange"
 					>
-						<a-form :model="form" ref="ruleForm" :rules="rules">
+						<a-form :model="formData" ref="ruleForm" :rules="rules">
 							<a-form-item label="用户名" name="name">
-								<a-input v-model:value="form.name" />
+								<a-input v-model:value="formData.name" />
 							</a-form-item>
               <a-form-item label="描述" name="description">
-								<a-input v-model:value="form.description" />
+								<a-input v-model:value="formData.description" />
 							</a-form-item>
 							<a-form-item :wrapper-col="{ span: 24, offset: 0 }">
 								<a-button type="primary" @click="onSubmit">
@@ -82,7 +82,6 @@
 <script>
 import { UserOutlined, LockOutlined } from "@ant-design/icons-vue";
 import roleMgr from '/@/http/role'
-import menuMgr from '/@/http/menu'
 let validateRoles = async (rule, value) => {
 	if (value.length === 0) {
 		return Promise.reject('请选择角色');
@@ -104,7 +103,7 @@ export default {
 			search: {
         roleName: '',
 			},
-			form: {
+			formData: {
 				description:"",
 				name:"",
 			},
@@ -145,7 +144,7 @@ export default {
 			],
 			pagination: {
 				current: 1,
-				pageSize: 5
+				pageSize: 10
 			},
 			loading: false,
 			rules: {
@@ -159,92 +158,75 @@ export default {
 		};
 	},
 	created() {
-		this.fetch({
-			pageNum: 1,
-			pageSize: 5
-		})
+		this.fetch()
 	},
 	methods: {
 		handleChange(value) {
       console.log(`selected ${value}`);
     },
 		handleSubmit(e) {
-			if (this.search.name === '') {
-				this.fetch({
-					pageNum: 1,
-					pageSize: 5
-				})
+			if (this.search.account === '') {
+				this.fetch()
+			} else {
+				this.fetch({...this.search})
 			}
-			this.fetch(this.search,{
-				pageNum: 1,
-				pageSize: 5
-			})
 		},
 		deleteUser(row) {
 			let params = {
-				url: `${roleMgr.delRole.url}/${row.id}`,
-				data: {}
+				...roleMgr.del,
+				data: {
+					id: row.id
+				}
 			}
-			this.$axios.delete(params.url,params.data).then(res=>{
+			this.$http(params).then(res=>{
 				console.log('删除成功')
-				this.fetch({
-					pageNum: 1,
-					pageSize: 5
-				})
+				this.fetch()
 			}).catch(err=> {
 				console.log('删除失败')
 			})
 		},
 		updateStatus(row) {
 			let params = {
-				url: `${roleMgr.updateStatus.url}`,
+				...roleMgr.updateStatus,
 				data: {
 					id: row.id,
 					status: !row.status
 				}
 			}
-			this.$axios.put(params.url,params.data).then(res=>{
+			this.$http(params).then(res=>{
 				console.log('修改状态成功')
-				this.fetch({
-					pageNum: 1,
-					pageSize: 5
-				})
+				this.fetch()
 			}).catch(err=> {
 				console.log('修改状态失败')
 			})
 		},
 		onSubmit() {
 			let params = {
-				url: roleMgr.createRole.url,
+				...roleMgr.create,
 				data: {
-					description:this.form.description,
-					name:this.form.name,
+					description:this.formData.description,
+					name:this.formData.name,
 				}
 			}
 			this.$refs.ruleForm
         .validate()
         .then(() => {
 					if (this.title === '新增角色') {
-						this.$axios.post(params.url,params.data).then(res=>{
+						this.$http(params).then(res=>{
 							console.log('新增成功')
 							this.visible = false;
-							this.fetch({
-								pageNum: 1,
-								pageSize: 5
-							})
+							this.fetch()
 						}).catch(err=> {
 							console.log('新增角色')
 						})
 					} else if (this.title === '编辑用户') {
             params.data.id = this.curId;
-            params.url = roleMgr.updateRole.url
-						this.$axios.put(params.url,params.data).then(res=>{
+						params.url = roleMgr.update.url;
+						params.method = roleMgr.update.method;
+						this.$http(params).then(res=>{
 							console.log('编辑成功')
 							this.visible = false;
-							this.fetch({
-								pageNum: 1,
-								pageSize: 5
-							})
+							this.fetch()
 						}).catch(err=> {
 							console.log('编辑失败')
 						})
@@ -256,7 +238,7 @@ export default {
 		showModel() {
 			this.visible = true; 
 			this.title='新增角色';
-			this.form = {
+			this.formData = {
 				description:"",
 				name:"",
 			}
@@ -264,7 +246,7 @@ export default {
 		updateUser(row) {
 			this.visible = true;
 			this.title = '编辑角色';
-			this.form = row;
+			this.formData = row;
 			this.curId = row.id;
 		},
 		resetForm() {
@@ -275,7 +257,6 @@ export default {
       console.log('visible', val);
     },
 		handleTableChange(pagination, filters, sorter) {
-      console.log(pagination);
       const pager = { ...this.pagination };
       pager.current = pagination.current;
       this.pagination = pager;
@@ -287,14 +268,21 @@ export default {
         ...filters,
       });
     },
-    fetch(params = {}) {
-      console.log('params:', params);
+    fetch(params = {},pageNum= 1, pageSize=10) {
+			let data = {
+				...roleMgr.list,
+				data: {
+					pageNum,
+					pageSize,
+					...params
+				}
+			}
       this.loading = true;
-      this.$axios.get(roleMgr.roleList.url,{params}).then(data => {
+      this.$http(data).then(data => {
         const pagination = { ...this.pagination };
-        pagination.total = data.data._meta.totalCount;
+        pagination.total = data._meta.totalCount;
         this.loading = false;
-        this.data = data.data.items.map((item, key)=>{
+        this.data = data.items.map((item, key)=>{
 					return {
 						...item,
 						key

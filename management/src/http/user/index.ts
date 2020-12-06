@@ -3,36 +3,37 @@ const loginServer = {
   method: 'post'
 }
 
-const userList = {
+const list = {
   url: '/user/admin/pageUser.do',
   method: 'get'
 }
 
-const createUser = {
+const create = {
   url: '/user/admin/createUser.do',
   method: 'post'
 }
 
-const updateUser = {
+const update = {
   url: '/user/admin/updateUserById.do',
-  method: 'put'
+  method: 'put',
 }
 
-const delUser = {
-  url: '/user/admin/deleteUserById.do',
+const del = {
+  url: '/user/admin/deleteUserById.do/[id]',
   method: 'delete'
 }
 
 const updateStatus = {
   url: '/user/admin/updateUserStatusById.do',
-  method: 'put'
+  method: 'put',
+  atherUrl: null
 }
 
 export default {
   loginServer,
-  userList,
-  createUser,
-  updateUser,
-  delUser,
+  list,
+  create,
+  update,
+  del,
   updateStatus
 }

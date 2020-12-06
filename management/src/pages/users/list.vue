@@ -21,17 +21,17 @@
 						v-model:visible="visible"
 						:after-visible-change="afterVisibleChange"
 					>
-						<a-form :model="userform" ref="ruleForm" :rules="rules">
+						<a-form :model="formData" ref="ruleForm" :rules="rules">
 							<a-form-item label="账户" name="account" v-if="title === '新增用户'">
-								<a-input v-model:value="userform.account" />
+								<a-input v-model:value="formData.account" />
 							</a-form-item>
 							<a-form-item label="用户名" name="name">
-								<a-input v-model:value="userform.name" />
+								<a-input v-model:value="formData.name" />
 							</a-form-item>
 							<a-form-item label="角色" name="roleIds">
 								<a-select
 									mode="multiple"
-									v-model:value="userform.roleIds"
+									v-model:value="formData.roleIds"
 									style="width: 100%"
 									placeholder="Please select"
 									@change="handleChange"
@@ -42,7 +42,7 @@
 								</a-select>
 							</a-form-item>
 							<a-form-item label="密码" name="password">
-								<a-input v-model:value="userform.password" />
+								<a-input v-model:value="formData.password" />
 							</a-form-item>
 							<a-form-item :wrapper-col="{ span: 24, offset: 0 }">
 								<a-button type="primary" @click="onSubmit">
@@ -122,7 +122,7 @@ export default {
         account: '',
 			},
 			roleIds: ["1","2","3","4","5"],
-			userform: {
+			formData: {
 				account:"",
 				name:"",
 				roleIds: [],
@@ -201,14 +201,16 @@ export default {
 		handleSubmit(e) {
 			if (this.search.account === '') {
 				this.fetch()
+			} else {
+				this.fetch({...this.search})
 			}
-			this.fetch({...this.search})
 		},
 		deleteUser(row) {
 			let params = {
-				url: `${userMgr.delUser.url}/${row.id}`,
-				method: userMgr.delUser.method,
-				data: {}
+				...userMgr.del,
+				data: {
+					id: row.id
+				}
 			}
 			this.$http(params).then(res=>{
 				console.log('删除成功')
@@ -233,13 +235,13 @@ export default {
 			})
 		},
 		onSubmit() {
-			let password = this.$md5(this.userform.password);
+			let password = this.$md5(this.formData.password);
 			let params = {
-				...userMgr.createUser,
+				...userMgr.create,
 				data: {
-					account:this.userform.account,
-					name:this.userform.name,
-					roleIds: this.userform.roleIds,
+					account:this.formData.account,
+					name:this.formData.name,
+					roleIds: this.formData.roleIds,
 					password
 				}
 			}
@@ -256,7 +258,8 @@ export default {
 						})
 					} else if (this.title === '编辑用户') {
 						params.data.id = this.curId;
-						params.url = userMgr.updateUser.url
+						params.url = userMgr.update.url
+						params.method = userMgr.update.method
 						this.$http(params).then(res=>{
 							console.log('编辑成功')
 							this.visible = false;
@@ -272,7 +275,7 @@ export default {
 		showModel() {
 			this.visible = true; 
 			this.title='新增用户';
-			this.userform = {
+			this.formData = {
 				account:"",
 				name:"",
 				roleIds: [],
@@ -282,7 +285,7 @@ export default {
 		updateUser(row) {
 			this.visible = true;
 			this.title = '编辑用户';
-			this.userform = row;
+			this.formData = row;
 			this.curId = row.id;
 		},
 		resetForm() {
@@ -306,7 +309,7 @@ export default {
     },
     fetch(params = {},pageNum= 1, pageSize=10) {
 			let data = {
-					...userMgr.userList,
+					...userMgr.list,
 					data: {
 						pageNum,
 						pageSize,
@@ -316,9 +319,9 @@ export default {
 			this.loading = true;
       this.$http(data).then(data => {
         const pagination = { ...this.pagination };
-        pagination.total = data.data._meta.totalCount;
+        pagination.total = data._meta.totalCount;
         this.loading = false;
-        this.data = data.data.items.map((item, key)=>{
+        this.data = data.items.map((item, key)=>{
 					return {
 						...item,
 						key
